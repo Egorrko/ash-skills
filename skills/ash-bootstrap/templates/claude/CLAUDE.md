@@ -1,0 +1,40 @@
+<!-- Template: /ash-bootstrap fills the <...> fields from the analysis. Keep it short:
+     every line is read on every turn. Detail goes to docs/ behind a pointer. -->
+<Product> — <one line from analysis §1>. Phoenix + Ash + LiveVue: every screen is a Vue
+component in `assets/vue` hosted by a LiveView.
+
+## Glossary
+
+<From analysis §1 Glossary: each term the owner uses, what it is in the product, and the
+module, route, or component it lives in. Synonyms point at one term. A term the owner
+stopped using is listed with the one that replaced it.>
+
+## Done means green
+
+`mix precommit` is the gate: compile with warnings as errors, format, `vue-tsc`, vitest,
+`mix test`. Run it once at the end of a change and fix everything red in it. While
+working, run only the affected tests: `mix test <files>`, `npx vitest run <file>`.
+
+- Props between `<.vue>` and `defineProps<T>()` are checked by `live_vue_contract`
+  (`strict: true`): a compile error or a failing render names the component and the key.
+  Fix the side that is wrong; `assets/vue/contract.json` is generated and committed.
+- Client logic that is more than markup goes into a `.ts` module with a vitest test.
+
+## Look at the screen
+
+A visual change is checked by its screenshot: `node bin/shot.mjs <path> out.png`, signed
+in: `--as <name>` (dev route `/dev/login/:name`), phone: `--size 390x844`. Read the image
+and the console errors the script prints. Clicks are a separate script beside it.
+
+## Ash
+
+Migrations are generated: `mix ash.codegen <name>` after a resource change, never written
+by hand except for data migrations. Docs: `mix usage_rules.docs Module.fun`,
+`mix usage_rules.search_docs "query" -p package`.
+
+## Docs
+
+- `docs/PRODUCT_ANALYSIS.md`: what the product must do; the slices and what is done.
+- `docs/BOOTSTRAP_HANDOFF.md`: how the project was created, open questions.
+<Source product, for a replatform: `<SOURCE_PATH>` is the authority on existing behavior,
+ `docs/notes/screens/` holds its screenshots.>

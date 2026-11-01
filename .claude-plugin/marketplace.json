@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ash-skills",
+  "description": "Phoenix + Ash + LiveVue: replatform or design a product, bootstrap it, build it slice by slice",
+  "owner": { "name": "egorrko" },
+  "plugins": [
+    {
+      "name": "ash-skills",
+      "description": "Replatform an app or design a new one onto Phoenix + Ash + LiveVue: analysis, bootstrap with a quality harness, then vertical slices.",
+      "version": "0.1.0",
+      "source": "./",
+      "category": "development",
+      "homepage": "https://github.com/Egorrko/ash-skills"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+# Docker Swarm stack — <APP>
+#
+# Images are built and pushed separately; tags are immutable Git SHAs.
+# Secrets come from the environment of whatever deploys this stack.
+#
+# Deploy with a panel that consumes stack files, or directly:
+#   DOCKER_HOST=ssh://<user>@<host> docker stack deploy -c deploy/stack.yml <APP>
+
+services:
+  <APP>:
+    image: <REGISTRY>/<APP>:latest
+    init: true
+    stop_grace_period: 30s
+
+    environment:
+      PHX_SERVER: "true"
+      PORT: "4000"
+      PHX_HOST: "${PHX_HOST:?PHX_HOST is required}"
+      SECRET_KEY_BASE: "${SECRET_KEY_BASE:?SECRET_KEY_BASE is required}"
+      DATABASE_URL: "${DATABASE_URL:?DATABASE_URL is required}"
+      POOL_SIZE: "${POOL_SIZE:-10}"
+      # Every other runtime variable from .env.example belongs here, required
+      # ones with :? so the deploy fails loudly instead of booting half-configured.
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4000/health >/dev/null || exit 1"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+      start_period: 15s
+
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 0
+      # start-first: the new task must pass its healthcheck before the old one
+      # goes away, so a failed release never takes the site down.
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 90s
+        max_failure_ratio: 0
+      rollback_config:
+        order: start-first
+        monitor: 90s
+        failure_action: pause
+
+    labels:
+      - traefik.http.services.<APP>.loadbalancer.server.port=4000
+      # Routing to individual task IPs rather than the Swarm VIP: during a
+      # start-first update both tasks are routable at once, which closes the
+      # VIP-failover gap that otherwise shows up as 502s.
+      #
+      # During that window a browser can load HTML from the new release and a
+      # hashed asset chunk from the old one, producing a 404. Sticky sessions
+      # prevent it; enable them where the router for this domain is defined.
