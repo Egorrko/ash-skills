@@ -136,8 +136,8 @@ script can detect becomes a check.
   report at the end of `mix test` names the components and events no test
   exercised. `strict: true`, the contract committed, every `pushEvent` through
   `useLiveEvents`. A gate that splits `mix test` into `--partitions` ends with
-  `mix live_vue_contract.coverage`, which merges the partitions into one report
-  (the release after 0.4.0).
+  `MIX_ENV=test mix live_vue_contract.coverage`, which merges the partitions
+  into one report.
 - **Typed client.** `tsconfig.json` with `strict: true`, every `.vue` file with
   `<script setup lang="ts">`. Logic a component computes on the client
   (formatting, sorting, a game rule) lives in a plain `.ts` module with a vitest
