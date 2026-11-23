@@ -6,7 +6,8 @@ module.exports = {
       name: "no-circular",
       severity: "error",
       comment: "A runtime import cycle: a module in it sees its neighbour half-loaded. Cycles through import type only do not count.",
-      from: {},
+      // shadcn-vue generates Component.vue <-> index.ts cycles for cva variants (badge, button)
+      from: { pathNot: "^assets/components/ui/" },
       to: { circular: true, viaOnly: { dependencyTypesNot: ["type-only", "type-import", "dynamic-import"] } },
     },
     {
@@ -15,6 +16,13 @@ module.exports = {
       comment: "components/ui holds generic primitives; they know nothing of the product's pages and components.",
       from: { path: "^assets/components/ui/" },
       to: { path: "^assets/vue/" },
+    },
+    {
+      name: "no-npm-cn",
+      severity: "error",
+      comment: "cn comes from @/lib/utils; shadcn-vue add rewrites it to the unrelated npm package cn (INSTALLER_DEFECTS.md).",
+      from: {},
+      to: { path: "^cn$|(^|/)node_modules/cn/" },
     },
     {
       name: "no-test-in-app",

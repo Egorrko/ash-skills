@@ -55,8 +55,8 @@ With the UI layer replaced in §12 Deviations, the component layer below is repl
 1. `npm install reka-ui class-variance-authority clsx tailwind-merge tw-animate-css @lucide/vue @vueuse/core`
 2. `${CLAUDE_SKILL_DIR}/templates/shadcn/components.json` to the project root; `templates/shadcn/utils.ts` to `assets/lib/utils.ts`.
 3. In `tsconfig.json` map `@/*` to `./assets/*`.
-4. In `assets/css/app.css`: `@import "tw-animate-css";` after the tailwind import, and the contents of `templates/shadcn/theme.css` appended. The theme hangs its dark variables off `[data-theme=dark]`, which phx.new already defines.
-5. `npx shadcn-vue@latest add button --yes`, and only the further primitives the first slice in §13 needs. The check: `assets/components/ui/button/` exists and `MIX_ENV=prod mix assets.build` passes.
+4. In `assets/css/app.css`: `@import "tw-animate-css";` after the tailwind import, `@source "../components";` beside the other `@source` lines (phx.new imports tailwind with `source(none)`, so the shadcn primitives are not scanned otherwise), and the contents of `templates/shadcn/theme.css` appended. The theme hangs its dark variables off `[data-theme=dark]`, which phx.new already defines.
+5. `npx shadcn-vue@latest add button --yes`, and only the further primitives the first slice in §13 needs. The check: `assets/components/ui/button/` exists, imports `cn` from `@/lib/utils` (the `cn` rewrite in `INSTALLER_DEFECTS.md`), and `MIX_ENV=prod mix assets.build` passes.
 
 Let a second copy of the project run its dev server beside the first, since parallel sessions each work in their own copy: `config/dev.exs` reads `VITE_PORT` (default 5173) into LiveVue's `vite_host`; `assets/vite.config.mjs` takes `server.port` from `VITE_PORT` with `strictPort: true` and allows `http://localhost:${PORT ?? 4000}` in `server.cors`. Check: `PORT=4011 VITE_PORT=5183 mix phx.server` serves `/` with its assets while another server holds 4000 and 5173.
 

@@ -8,11 +8,11 @@ Every entry names the versions it was observed against. Confirm the defect
 still reproduces before applying its workaround; delete the entry once upstream
 fixes it.
 
-Last full run: 2026-11-01 against phoenix_vite 0.6.1, live_vue 1.2.3,
-Phoenix 1.8.16, usage_rules 1.3.1, igniter_new 0.5.35, typescript 6.0.3.
-Every entry below reproduced on that run unless it says otherwise. Not re-tried
-on it: shadcn-vue's init, usage_rules.sync without a TTY, the `--no-tailwind`
-stylesheet.
+Last full run: 2026-11-23 against phoenix_vite 0.6.1, live_vue 1.2.3,
+Phoenix 1.8.17, usage_rules 1.3.1, igniter_new 0.5.35, typescript 6.0.3, vite 8.3.8,
+shadcn-vue 2.9.0. Every entry below reproduced on that run unless it says otherwise.
+Not re-tried on it: shadcn-vue's init, usage_rules.sync without a TTY, the
+`--no-tailwind` stylesheet.
 
 ## phoenix_vite points its npm profile at config/
 
@@ -53,6 +53,12 @@ which cannot build a Vite frontend.
 **Workaround.** Add `nodejs` and `npm` to the builder stage, and move
 `COPY package.json package-lock.json components.json tsconfig.json ./` before
 `mix assets.setup` so npm runs at the project root after deps are fetched.
+Move `COPY assets assets` above `RUN mix compile` too: the `:live_vue_contract`
+compiler reads `assets/vue` at compile time, so without it the image build fails
+(or, non-strict, checks nothing).
+
+**Verify.** `docker build` passes; a `<.vue>` prop missing from `defineProps`
+fails the image build at `RUN mix compile`.
 
 ## .dockerignore misses the root node_modules
 
@@ -114,7 +120,8 @@ answers 200 with no `default.css` request in the page.
 
 ## LiveVue's vite alias "@" is a bare "."
 
-Observed 2026-11-01 against live_vue 1.2.3, phoenix_vite 0.6.1, vite 8.3.5.
+Observed 2026-11-01 against live_vue 1.2.3, phoenix_vite 0.6.1, vite 8.3.5; reproduced
+2026-11-23 on vite 8.3.8.
 
 **Symptom.** The LiveVue installer writes `resolve.alias: {"@": "."}` to
 `assets/vite.config.mjs`. A bare `.` resolves relative to the importing file, so
@@ -129,7 +136,8 @@ Observed 2026-11-01 against live_vue 1.2.3, phoenix_vite 0.6.1, vite 8.3.5.
 
 ## LiveVue's tsconfig.json fails vue-tsc under TypeScript 6
 
-Observed 2026-11-01 against live_vue 1.2.3, typescript 6.0.3, vue-tsc 3.3.14.
+Observed 2026-11-01 against live_vue 1.2.3, typescript 6.0.3, vue-tsc 3.3.14; reproduced
+2026-11-23 on the same versions.
 
 **Symptom.** `npx vue-tsc --noEmit` fails with TS5101 (`baseUrl` deprecated).
 With `baseUrl` removed it fails in `deps/live_vue/assets/*.ts`: `lib` ES2015
@@ -142,6 +150,52 @@ types.
 `"types": ["vite/client", "node"]`.
 
 **Verify.** `npx vue-tsc --noEmit` exits 0.
+
+## shadcn-vue add rewrites the cn import to an npm package
+
+Observed 2026-11-23 against shadcn-vue 2.9.0, typescript 6.0.3.
+
+**Symptom.** `npx shadcn-vue@latest add button --yes` writes
+`import { cn } from "cn"` instead of `@/lib/utils` into the generated components
+and installs the unrelated npm package `cn` (^0.5.2, ships a bin). Reproduces with
+and without the tsconfig `"*"` path and with `baseUrl`, so tsconfig is not the cause.
+
+**Workaround.** After each `add`: `sed -i 's#from "cn"#from "@/lib/utils"#'` over
+the new files in `assets/components/ui/`, then `npm uninstall cn`. The
+dependency-cruiser template's `no-npm-cn` rule keeps it from coming back.
+
+**Verify.** `grep -r 'from "cn"' assets/components` and `npm ls cn` find nothing.
+
+## ash_cloak installs no vault
+
+Observed 2026-11-23 against ash_cloak 0.5.0, cloak 1.1.4.
+
+**Symptom.** After `--install ash_cloak,cloak` there is no `<App>.Vault`, no cipher
+configuration and no key variable; the first encrypted attribute fails at runtime.
+
+**Workaround.** `lib/<app>/vault.ex` with `use Cloak.Vault, otp_app: :<app>`, in the
+supervision tree after the Repo. Cipher `Cloak.Ciphers.AES.GCM` (`tag: "AES.GCM.V1"`,
+`iv_length: 12`): a throwaway key in `config/dev.exs` and `config/test.exs`,
+`CLOAK_KEY` (base64 of 32 bytes) required in the prod block of `runtime.exs`, and
+added to `.env.example` and the image workflow's `env`. Never `AES.CTR`
+(CVE-2026-95105 in cloak 1.1.4, no fix).
+
+**Verify.** A test encrypts and decrypts through the vault and matches the
+ciphertext header `<<1, 10, "AES.GCM.V1", _::binary>>`.
+
+## phx.gen.release --docker crashes behind an HTTP proxy
+
+Observed 2026-11-23 against phoenix 1.8.17, Elixir 1.20.5.
+
+**Symptom.** With `HTTP_PROXY`/`HTTPS_PROXY` set, the task fetches Bob's docker tags
+and raises `FunctionClauseError` in `String.to_charlist/1` (given `nil`) from
+`Mix.Tasks.Phx.Gen.Release.fetch_body!/1`. `rel/` and `release.ex` are written,
+the `Dockerfile` and `.dockerignore` are not.
+
+**Workaround.** Rerun with the proxy unset:
+`env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy mix phx.gen.release --docker`.
+
+**Verify.** `Dockerfile` and `.dockerignore` exist.
 
 ## Fixed upstream
 
