@@ -1,0 +1,97 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "vue",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "ignorePatterns": [
+    "assets/vendor/**",
+    "assets/node_modules/**",
+    "assets/components/ui/**"
+  ],
+  "rules": {
+    "unicorn/no-useless-spread": "off",
+    "unicorn/no-new-array": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-array-sort": "off",
+    "eslint/no-shadow": "off",
+    "import/no-unassigned-import": "off",
+    "eslint/no-underscore-dangle": "off",
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/no-array-reverse": "off",
+    "eslint/no-unmodified-loop-condition": "off",
+    "import/no-named-as-default": "off",
+    "unicorn/require-post-message-target-origin": "off",
+    "vue/valid-define-emits": "error",
+    "vue/valid-define-props": "error",
+    "vue/no-export-in-script-setup": "error",
+    "vue/no-import-compiler-macros": "error",
+    "vue/no-multiple-slot-args": "error",
+    "vue/no-required-prop-with-default": "error",
+    "vue/no-deprecated-destroyed-lifecycle": "error",
+    "vue/no-arrow-functions-in-watch": "error",
+    "vue/no-lifecycle-after-await": "error",
+    "vue/require-typed-ref": "error",
+    "vue/define-props-declaration": "error",
+    "vue/define-emits-declaration": "error",
+    "vue/prefer-import-from-vue": "error",
+    "vue/return-in-computed-property": "error",
+    "vue/no-async-in-computed-properties": "error",
+    "vue/no-side-effects-in-computed-properties": "error",
+    "vue/no-deprecated-delete-set": "error",
+    "vue/no-deprecated-events-api": "error",
+    "import/no-self-import": "error",
+    "import/no-absolute-path": "error",
+    "import/no-empty-named-blocks": "error",
+    "import/no-mutable-exports": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "import/export": "error",
+    "import/named": "error",
+    "import/namespace": "error",
+    "import/no-amd": "error",
+    "import/no-duplicates": "error",
+    "eslint/no-var": "error",
+    "eslint/no-eval": "error",
+    "eslint/no-new-func": "error",
+    "eslint/no-implied-eval": "error",
+    "eslint/no-useless-rename": "error",
+    "eslint/no-useless-constructor": "error",
+    "eslint/no-debugger": "error",
+    "eslint/radix": "error",
+    "eslint/no-lone-blocks": "error",
+    "eslint/no-useless-computed-key": "error",
+    "eslint/no-empty": "error",
+    "eslint/no-throw-literal": "error",
+    "eslint/no-constructor-return": "error",
+    "eslint/prefer-promise-reject-errors": "error",
+    "typescript/no-duplicate-enum-values": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/no-unnecessary-type-constraint": "error",
+    "typescript/no-wrapper-object-types": "error",
+    "unicorn/no-instanceof-builtins": "error",
+    "unicorn/throw-new-error": "error",
+    "unicorn/prefer-type-error": "error",
+    "unicorn/no-abusive-eslint-disable": "error",
+    "unicorn/prefer-dom-node-remove": "error",
+    "eslint/no-fallthrough": [
+      "error",
+      {
+        "allowEmptyCase": true
+      }
+    ],
+    "eslint/no-unused-expressions": [
+      "error",
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ]
+  }
+}

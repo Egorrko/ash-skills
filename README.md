@@ -11,28 +11,36 @@ rather than code, then implement it slice by slice.
 ```
 
 - `/replatform-to-ash` reads an existing app, backend or frontend-only (Supabase, Firebase,
-  a third-party API), screenshots every screen, and writes the analysis: domain model,
-  rules with `file:line` evidence, the target architecture, a first vertical slice.
+  a third-party API). It first checks the move is feasible (volume, an equivalence oracle,
+  libraries with no Elixir counterpart, upstream, maintainers) and proposes a pilot slice
+  when it is doubtful. Then it screenshots every screen and writes the analysis: domain
+  model, rules with `file:line` evidence, the target architecture, the slices.
 - `/new-ash-project` designs a new product with you through an interview and writes the
   same analysis.
 - `/ash-bootstrap` creates the target with the latest generators, installs the stack and
   its quality harness, verifies it to a running release, and writes a handoff.
 - `/next-slice`, installed into the target, implements one user-visible slice at a time:
-  Ash resources to Vue screens, verified by the gate and by screenshots, committed.
+  Ash resources to Vue screens, verified by the gate and by screenshots, committed. A
+  request outside the analysis becomes a slice in it first.
 
 ## The stack
 
 Elixir, Phoenix, Ash with AshPostgres, LiveView hosting LiveVue: every screen is a Vue
 component, shadcn-vue on Tailwind. Optional Ash extensions are selected only when the
-analysis names a behavior that needs them. Deployment defaults to a Docker image on a
-Swarm stack. Full policy: [`STACK_POLICY.md`](skills/ash-bootstrap/references/STACK_POLICY.md).
+analysis names a behavior that needs them. The image is built and proved in CI and runs
+on Swarm (the default), the organisation's Kubernetes, or natively. Full policy: [`STACK_POLICY.md`](skills/ash-bootstrap/references/STACK_POLICY.md).
 
 The quality harness is what lets you not read the code: every class of agent mistake
 turns one gate, `mix precommit`, red.
 
-- **Props contract**: [`live_vue_contract`](https://github.com/Egorrko/live_vue_contract)
-  checks `<.vue>` tags against `defineProps<T>()` at compile time and in tests, `strict`.
+- **Contract**: [`live_vue_contract`](https://github.com/Egorrko/live_vue_contract)
+  checks `<.vue>` tags against `defineProps<T>()` and `pushEvent`/`handle_event`
+  against `useLiveEvents<T>()`, at compile time and in tests, with a coverage report.
 - **Typed client**: strict TypeScript, `vue-tsc` and vitest in the gate.
+- **Client lint**: oxlint (plain and type-aware), ESLint for Vue templates and
+  accessibility, Stylelint, knip, dependency-cruiser.
+- **Architecture checks**: Credo with project checks (`Repo` only through Ash, every
+  domain declares its boundary, 600 lines per file) and `boundary` between Ash domains.
 - **Eyes**: Playwright and `bin/shot.mjs` screenshot any page as any user through a
   dev-only login route; a replatform compares each screen with the source's.
 - **Instructions**: a hand-written `CLAUDE.md` with the product glossary, and a hook that
@@ -88,7 +96,8 @@ stopped.
   installer grammar, known installer defects with the versions they were seen on, and a
   runtime outside containers.
 - `skills/ash-bootstrap/templates/`: the pipeline's contracts (the analysis, the handoff,
-  the `next-slice` skill), the target's `CLAUDE.md`, hook and screenshot script, deploy files.
+  the `next-slice` skill), the target's `CLAUDE.md`, hook and screenshot script, lint and
+  Credo configs, deploy files with the CI image workflow.
 
 The installer defects list is kept current by the bootstrap itself: at the end of a run it
 proposes the entries that reproduced, stopped reproducing, or are new.

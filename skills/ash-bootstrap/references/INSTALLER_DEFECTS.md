@@ -8,9 +8,11 @@ Every entry names the versions it was observed against. Confirm the defect
 still reproduces before applying its workaround; delete the entry once upstream
 fixes it.
 
-Last full run: 2026-09-19 against phoenix_vite 0.6.0, live_vue 1.2.3,
-Phoenix 1.8.14, usage_rules 1.2.8, igniter_new 0.5.34. Every entry below
-reproduced on that run unless it says otherwise.
+Last full run: 2026-11-01 against phoenix_vite 0.6.1, live_vue 1.2.3,
+Phoenix 1.8.16, usage_rules 1.3.1, igniter_new 0.5.35, typescript 6.0.3.
+Every entry below reproduced on that run unless it says otherwise. Not re-tried
+on it: shadcn-vue's init, usage_rules.sync without a TTY, the `--no-tailwind`
+stylesheet.
 
 ## phoenix_vite points its npm profile at config/
 
@@ -109,6 +111,37 @@ and drop the `default.css` link from `root.html.heex`.
 
 **Verify.** `git clone` the target, `mix assets.build`, and `/assets/css/app.css`
 answers 200 with no `default.css` request in the page.
+
+## LiveVue's vite alias "@" is a bare "."
+
+Observed 2026-11-01 against live_vue 1.2.3, phoenix_vite 0.6.1, vite 8.3.5.
+
+**Symptom.** The LiveVue installer writes `resolve.alias: {"@": "."}` to
+`assets/vite.config.mjs`. A bare `.` resolves relative to the importing file, so
+`import { Button } from "@/components/ui/button"` in a Vue component fails
+`MIX_ENV=prod mix assets.build` with `UNLOADABLE_DEPENDENCY … Is a directory`.
+
+**Workaround.** `import { fileURLToPath } from "node:url"` and
+`"@": fileURLToPath(new URL(".", import.meta.url))`.
+
+**Verify.** A Vue component importing `@/components/ui/button`, then
+`MIX_ENV=prod mix assets.build`.
+
+## LiveVue's tsconfig.json fails vue-tsc under TypeScript 6
+
+Observed 2026-11-01 against live_vue 1.2.3, typescript 6.0.3, vue-tsc 3.3.14.
+
+**Symptom.** `npx vue-tsc --noEmit` fails with TS5101 (`baseUrl` deprecated).
+With `baseUrl` removed it fails in `deps/live_vue/assets/*.ts`: `lib` ES2015
+lacks `Object.entries` and `PromiseSettledResult`, and `server.ts` has no Node
+types.
+
+**Workaround.** Drop `baseUrl`; make `paths` relative (`"@/*": ["./assets/*"]`,
+`"*": ["./deps/*", "./node_modules/*"]`); `target` ES2022, `lib`
+`["ES2022", "DOM", "DOM.Iterable"]`; `npm i -D @types/node` and
+`"types": ["vite/client", "node"]`.
+
+**Verify.** `npx vue-tsc --noEmit` exits 0.
 
 ## Fixed upstream
 

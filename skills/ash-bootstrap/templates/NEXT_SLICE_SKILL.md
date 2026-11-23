@@ -25,6 +25,8 @@ The source product at `<SOURCE_PATH>` is the authority on existing behavior. Rea
 
 Otherwise the slice is `$ARGUMENTS` when the user named one, else the first slice in `docs/PRODUCT_ANALYSIS.md` not marked done. The first run takes the one recorded in the handoff; later runs continue down the analysis.
 
+A request the analysis does not contain (a new screen, a changed rule, a fix the owner noticed) becomes a slice first: add it to §13 with its scenario, scope and acceptance, in the owner's words, then implement it like any other. The analysis stays the one list of what the product does.
+
 Confirm the choice in one line before implementing.
 
 ## 2. Clear the questions that block it
@@ -40,20 +42,22 @@ A slice runs from user-visible start to user-visible finish. It is not a layer.
 - Ash domains, resources, actions, policies, calculations, and validations;
 - migrations generated through the Ash tooling;
 - the LiveView route, mount, and authoritative state;
-- the LiveVue components for every screen this slice touches;
+- the LiveVue components for every screen this slice touches, each `pushEvent` declared in `useLiveEvents` with its payload and reply;
 - tests covering the behavior and the authorization rules, including the unhappy paths;
 - client logic beyond markup in a `.ts` module with a vitest test;
 - seeds or fixtures when the slice needs data to be visible.
 
-Deterministic business rules stay in deterministic Elixir. Stack decisions already recorded in the analysis stand.
+Deterministic business rules stay in deterministic Elixir. Stack decisions already recorded in the analysis stand. A new Ash domain declares `use Boundary` with the domains it calls; a call that needs a new dependency between domains is added to that list on purpose, and one that would close a cycle is a sign to move the behavior.
 
 ## 4. Verify
 
-`mix precommit` is the gate, run once at the end and green before the slice is done: it compiles with warnings as errors, checks the props contract, formats, runs `vue-tsc`, vitest, and `mix test`. Something red in it is part of this slice, whoever caused it.
+`mix precommit` is the gate, run once at the end and green before the slice is done; the alias in `mix.exs` lists its checks. Something red in it is part of this slice, whoever caused it. Its last lines are the contract coverage report: each component and event this slice added has a test that renders or pushes it.
 
-Then look at every screen the slice touched: `node bin/shot.mjs <path> <scratchpad>/<name>.png --as <user>`, at desktop size and `--size 390x844`, in each state the slice adds (empty, filled, error, another role). Read each image and the console errors the script prints. A screen of the source product has its reference in `docs/notes/screens/`: put the two side by side and account for every difference, as intended (a fix, a decision in the analysis) or as a defect to fix now. A slice that touches a screen for a client §9 names on another device is checked on that device: ask the owner to open it, and wait for the result.
+Then look at every screen the slice touched: `node bin/shot.mjs <path> <scratchpad>/<name>.png --as <user>`, at desktop size and `--size 390x844`, in each state the slice adds (empty, filled, error, another role). Read each image and the console errors the script prints. In a copy of the repository, beside a server that already holds the default ports, run `PORT=4011 VITE_PORT=5183 mix phx.server` and shoot with `--base http://localhost:4011`.
 
-Rebuild the deployment artefact from §12 (the Docker image, or the release booted under its native runtime) when the slice touched assets, configuration, runtime environment, or dependencies. Every check gets a verdict: passed, failed, or not verified with the reason.
+A screen of the source product has its reference in `docs/notes/screens/`. The reference is a guide to what the screen shows and does (its content, states and actions), not a pixel target: put the two side by side and account for every difference in content and behavior, as intended (a fix, a decision in the analysis) or as a defect to fix now. Spacing, type and color come from the component layer. A slice that touches a screen for a client §9 names on another device is checked on that device: ask the owner to open it, and wait for the result.
+
+Rebuild the deployment artefact from §12 (the Docker image, or the release booted under its native runtime) when the slice touched assets, configuration, runtime environment, or dependencies. A local image build that fails fetching from the network is `not verified: network`; the image workflow on the next push is its check. Every check gets a verdict: passed, failed, or not verified with the reason.
 
 ## 5. Acceptance against the analysis
 

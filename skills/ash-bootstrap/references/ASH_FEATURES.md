@@ -45,7 +45,8 @@ nobody cites stays out. "Always" rows are the stack itself.
 | `phoenix` | `ash_phoenix` | | Always. |
 | `postgres` | `ash_postgres` | | Always. `sqlite` / `csv` (`ash_sqlite`, `ash_csv`) replace it only when the product genuinely has no relational server database. |
 | `usage_rules` | `usage_rules` | | Always. |
-| `live_vue_contract` | `live_vue_contract` (Hex) and `vue-component-meta` (npm) | manual setup | Always, with `live_vue`: the props contract of the quality harness in `STACK_POLICY.md`. |
+| `live_vue_contract` | `live_vue_contract` (Hex), its npm package from `deps/`, `vue-component-meta` (npm) | manual setup | Always, with `live_vue`: the props and events contract of the quality harness in `STACK_POLICY.md`. |
+| `credo`, `boundary` | `credo`, `boundary` | manual setup | Always: the architecture checks of the quality harness. |
 | `live_vue` | `live_vue` | separate installer, see above | Always, unless §12 Deviations replaces the UI layer. |
 | `graphql` | `ash_graphql` | | A GraphQL contract stays part of the product. A new LiveVue UI needs none. |
 | `json_api` | `ash_json_api` | | An external or mobile client depends on the contract. |
@@ -64,7 +65,7 @@ nobody cites stays out. "Always" rows are the stack itself.
 | `double_entry` | `ash_double_entry` (requires `money`) | | The product keeps accounts and ledgers. |
 | `ash_ai` | `ash_ai` | | Genuinely generative behavior. Deterministic rules stay in deterministic Elixir. |
 | `tidewave` | `tidewave` | | Development tooling; select when the user wants it. |
-| `admin` | `ash_admin` | | An internal operator interface. Never a substitute for product screens. |
+| `admin` | `ash_admin` | | A raw table view for operators behind the superadmin check. The product's admin screens are built on the admin shell in `STACK_POLICY.md`. |
 | `live_debugger` | `live_debugger` | | Development only. |
 | `cinder`, `mishka` | | | Out. Both render components in LiveView templates and duplicate the Vue component layer in `STACK_POLICY.md`. |
 | `appsignal`, `opentelemetry` | `ash_appsignal`, `opentelemetry_ash` | manual setup, no installer | Observability the product already had or the user asks for. |

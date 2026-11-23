@@ -8,9 +8,10 @@ analysis section gets ` — done` appended to its heading.
 
 Analysis (`/replatform-to-ash` or `/new-ash-project`):
 
+- [ ] A0. Feasibility answered, and the user's decision recorded when an answer was bad
 - [ ] A1. Sections 1–10 written
-- [ ] A2. Section 12 target architecture written, runtime and deployment decided, deviations recorded with evidence
-- [ ] A3. Section 13 first slice agreed
+- [ ] A2. Section 12 target architecture written, runtime profile decided, deviations recorded with evidence
+- [ ] A3. Section 13 slices listed, the first one agreed
 - [ ] A4. Section 15 open questions recorded
 
 Bootstrap (`/ash-bootstrap`):
@@ -34,6 +35,24 @@ Fact-finding that outgrows a section (protocol dumps, reverse-engineering
 notes, vendor API traces) lives in `notes/` beside this file and is referenced
 from the section that needs it. The bootstrap copies `notes/` into the target's
 `docs/notes/`.
+
+## Feasibility
+
+Answered before the full analysis, each with its evidence. A new product writes
+`Not applicable: new product.` and names only the owner and the maintainers.
+
+- **Volume**: files and lines per area, screens, integrations, a first count of slices.
+- **Oracle**: what shows the target behaves like the source: the owner's
+  specification, the source's tests, production data compared side by side; and
+  whether the agent can run it.
+- **Libraries**: each capability the source takes from a library with no Elixir
+  counterpart (a SQL parser, a rendering engine, a vendor SDK), with what a
+  rewrite of it would take.
+- **Upstream**: what the source receives from a project it follows (a fork, a
+  vendor release), how often, and what stops arriving after the move.
+- **People**: the owner who decides product questions, and who maintains the
+  target afterwards.
+- **Decision**: go, a pilot slice first (which scenario, what it measures), or stop.
 
 ## 1. Product purpose
 
@@ -119,16 +138,21 @@ entry.
 
 ### Runtime and deployment
 
-Either the default from `STACK_POLICY.md`, a Docker image deployed as a Swarm
-stack, with the registry and image name; or the product's own runtime with the
-reason, and what artefact the bootstrap writes for it. Registry unknown: say so
-here, and it becomes an open question.
+The runtime profile from `STACK_POLICY.md`, "Deployment": Swarm (the default),
+Kubernetes on the organisation's cluster, or native, with the reason. Swarm and
+Kubernetes: the registry and image name. Kubernetes: the cluster's owners and
+where their conventions are written. Native: the artefact the bootstrap writes.
+The database server the target needs. Each of these unknown: say so here, and it
+becomes an open question.
 
-## 13. First vertical slice
+## 13. Vertical slices
 
-One complete scenario for the first implementation session: user-visible start
-and finish; Resources and actions; authorization; UI path; tests and
-verification; scope boundary.
+The slices in build order, each a user-visible scenario, marked done as they
+land. The first is written in full for the first implementation session:
+user-visible start and finish; Resources and actions; authorization; UI path;
+tests and verification; scope boundary. Admin screens are slices after the
+admin shell (`STACK_POLICY.md`, "Admin screens"). A request that arrives later
+is added here before it is built.
 
 ## 14. Bootstrap command
 
