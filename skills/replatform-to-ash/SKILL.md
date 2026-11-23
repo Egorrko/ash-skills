@@ -50,6 +50,14 @@ The owner judges the target by how it looks and behaves, so the source's screens
 
 Section 12 proposes the Ash Domains, Resources, actions, policies, jobs, LiveViews, and LiveVue components, following `${CLAUDE_SKILL_DIR}/../ash-bootstrap/references/STACK_POLICY.md`. Domain boundaries follow business behavior, not the source layout. The contract to preserve is what users see and do, plus every API a client outside the repository calls (§8 names the client); the source's own frontend-to-backend endpoints are evidence about behavior, and LiveView replaces them. Admin screens become slices on the admin shell in the policy. The runtime profile follows where the organisation runs services (the source's deployment files, or the user), and the registry and cluster conventions come from the same place, or stay open questions. Any departure from the policy goes into §12 Deviations with its evidence; a constraint the source only asserts (a comment, a doc, a past decision) is checked before it becomes a deviation, or goes to §15 with the check that would settle it.
 
+A source carries its age in behavior too: features built for limits that no longer hold, workarounds that became features, two generations of one thing side by side (two chart engines, two permission models). Each scenario in §3 and each rule in §5 gets a **verdict**:
+
+- **carry**: users rely on it as it is;
+- **redesign**: the need stays, the source's way of meeting it goes; the analysis states the new behavior;
+- **drop**: nobody needs it.
+
+The evidence is usage: production data on what is used and how often, the owner's word, the commit history. A behavior without evidence is carry, with a §15 question naming the evidence that would change it. Redesign and drop are the owner's decisions: put them to the owner as one list per area, each with its evidence.
+
 The source's components follow its framework. Vue or Nuxt components carry over: markup and styles stay, data arrives as props from the LiveView instead of from fetches and stores. React, Svelte, or anything else is rewritten in Vue, and the reference screenshots are its specification. §12 says which, per area.
 
 Section 13 lists the slices and defines the first one in full, user-visible start to finish; a pilot slice the user chose at Feasibility is the first. Section 15 lists what stays ambiguous, each entry stating which slice it blocks.

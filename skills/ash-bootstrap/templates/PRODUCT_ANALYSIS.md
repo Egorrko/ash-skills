@@ -71,7 +71,8 @@ Identity, roles, ownership, and allowed operations.
 
 ## 3. User scenarios
 
-Complete end-to-end scenarios.
+Complete end-to-end scenarios. For a replatform each ends with its verdict
+(carry, redesign with the new behavior, or drop) and the usage evidence behind it.
 
 ## 4. Domain model
 
@@ -81,7 +82,7 @@ lifecycle; invariants; source files and migrations where a source exists.
 ## 5. Business rules
 
 Deterministic product rules, each with its source and test reference where a
-source exists.
+source exists, and for a replatform its verdict and evidence, as in §3.
 
 ## 6. Authentication and authorization
 

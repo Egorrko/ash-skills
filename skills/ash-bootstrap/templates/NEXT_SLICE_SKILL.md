@@ -65,8 +65,7 @@ Runs when no unfinished slice remains, or on demand with `/next-slice acceptance
 
 Walk the analysis and account for every item in `docs/ACCEPTANCE.md`:
 
-- each user scenario from section 3;
-- each business rule from section 5;
+- each user scenario from section 3 and each business rule from section 5: a carried one against the source, a redesigned one against the new behavior the analysis states;
 - each defect found in the source, with the code and test that close it;
 - each compatibility constraint from section 10;
 - each reference screen in `docs/notes/screens/`, with the target's screenshot of the same route and state.
@@ -77,7 +76,7 @@ The checks are independent, so a long list splits across parallel subagents, a b
 
 Then run the full verification table from the handoff once, including the steps individual slices skipped.
 
-Finish with what deliberately did not come across, and why. That list is the honest difference between the two products, and it is the deliverable.
+Finish with what deliberately did not come across, and why: every dropped behavior with its evidence, and anything else left out. That list is the honest difference between the two products, and it is the deliverable.
 
 ## 6. Record and commit
 

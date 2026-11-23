@@ -1,6 +1,6 @@
 {
   "name": "ash-skills",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Replatform an app or design a new one onto Phoenix + Ash + LiveVue: analysis, bootstrap with a quality harness, then vertical slices.",
   "author": { "name": "egorrko" },
   "repository": "https://github.com/Egorrko/ash-skills",
