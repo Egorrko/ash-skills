@@ -7,13 +7,15 @@
 #   cp -r _build/prod/rel/app_template ~/.local/share/app_template/release
 #   mkdir -p ~/.config/app_template ~/.config/systemd/user
 #   cp .env.example ~/.config/app_template/env      # then fill SECRET_KEY_BASE
-#   docker exec postgres18 createdb -U postgres app_template
+#   createdb -h 127.0.0.1 -U postgres app_template
 #   set -a; . ~/.config/app_template/env; set +a; ~/.local/share/app_template/release/bin/migrate
 #   cp deploy/native/app_template.service ~/.config/systemd/user/
 #   systemctl --user daemon-reload && systemctl --user enable --now app_template
 #   curl http://127.0.0.1:$PORT/health
 [Unit]
 Description=app_template
+# A desktop-session app (notify-send, the user's D-Bus) uses graphical-session.target
+# here and in WantedBy instead (NATIVE_RUNTIME.md).
 After=network-online.target
 
 [Service]

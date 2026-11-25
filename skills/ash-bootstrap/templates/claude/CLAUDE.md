@@ -30,8 +30,8 @@ touches: `mix test <files>`, `npx vitest run <file>`, `npm run lint:all`.
 A visual change is checked by its screenshot: `node bin/shot.mjs <path> out.png`, signed
 in: `--as <name>` (dev route `/dev/login/:name`), phone: `--size 390x844`. Read the image
 and the console errors the script prints. Clicks are a separate script beside it.
-A copy of this repository runs its own server with `PORT=4011 VITE_PORT=5183 mix phx.server`
-and shoots with `--base http://localhost:4011`.
+A copy of this repository runs its own server on free ports, `PORT=<p> VITE_PORT=<v> mix phx.server`
+(`ss -ltn` shows the taken ones), and shoots with `--base http://localhost:<p>`.
 
 ## Ash
 

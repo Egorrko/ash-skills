@@ -14,6 +14,8 @@ config :app_template, AppTemplate.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
+  # PGPORT moves dev and test to another server: Postgrex reads it only for ecto.create.
+  port: String.to_integer(System.get_env("PGPORT", "5432")),
   database: "app_template_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,

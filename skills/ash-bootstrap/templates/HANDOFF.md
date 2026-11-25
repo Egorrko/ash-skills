@@ -75,7 +75,7 @@ failing line, and the image workflow is its check once the repository has a remo
 | The gate | `mix precommit` | |
 | Screenshots | `node bin/shot.mjs / out.png`, and `--as <name>` with authentication | |
 | Development server boot | `mix phx.server`; `curl` on `/` and `/health` | |
-| Release files | `mix phx.gen.release --docker` | |
+| Release files | in the starter: `rel/`, and `Dockerfile` unless the runtime is native | |
 | OTP release build | `MIX_ENV=prod mix release` | |
 | Docker image build (image) | `docker build -t <app>:bootstrap .` | |
 | Release migrations from the image (image) | `docker run ... <app>:bootstrap /app/bin/migrate` | |
@@ -116,4 +116,4 @@ one with `/next-slice <slice>`; a request outside the analysis becomes a slice
 the same way.
 
 Dev login, with authentication: while `mix phx.server` runs, open
-`http://localhost:4000/dev/login/<name>` to see any screen as that user.
+`http://localhost:<PORT>/dev/login/<name>` to see any screen as that user.

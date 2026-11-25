@@ -15,10 +15,12 @@ metadata:
 ## Searching Documentation
 
 ```sh
-mix usage_rules.search_docs "search term" -p live_vue
+mix usage_rules.search_docs "search term" -p live_vue -p live_vue_contract
 ```
 
 ## Available Mix Tasks
 
 - `mix live_vue.install`
+- `mix compile.live_vue_contract` - Regenerates the LiveVue props contract from defineProps when its sources changed
+- `mix live_vue_contract.coverage` - Merges the coverage of partitioned test runs into one report
 <!-- usage-rules-skill-end -->

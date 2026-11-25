@@ -56,7 +56,7 @@ A §12 Deviation that replaces the UI layer leaves the starter: follow `referenc
 
 Write `CLAUDE.md` from `${CLAUDE_SKILL_DIR}/templates/claude/CLAUDE.md`, every `<...>` filled from the analysis: the glossary from §1, the source path for a replatform. The starter already has `.claude/hooks/skill-reminder.sh` and `.claude/settings.json`.
 
-Copy `${CLAUDE_SKILL_DIR}/templates/NEXT_SLICE_SKILL.md` to `.claude/skills/next-slice/SKILL.md`. Replace `<SOURCE_PATH>` with the source checkout's absolute path; for a new product, delete the paragraphs that name it.
+Copy `${CLAUDE_SKILL_DIR}/templates/NEXT_SLICE_SKILL.md` to `.claude/skills/next-slice/SKILL.md`. Replace `<SOURCE_PATH>` with the source checkout's absolute path; for a new product, delete the paragraphs and list items about the source: `<SOURCE_PATH>`, source defects, `docs/notes/screens/`. Without authentication in §6, delete the `--as` and dev-login mentions from `CLAUDE.md`.
 
 The starter carries the shadcn-vue primitives button, badge, card, input and switch. Add only those the first slice in §13 needs beyond them: `npx shadcn-vue@latest add <name> --yes`, then `grep -r 'from "cn"' assets/components` and `npm ls cn` find nothing (`INSTALLER_DEFECTS.md`), and a primitive knip calls unused is removed until a slice uses it.
 
@@ -69,7 +69,7 @@ The harness itself is in the starter and was proven when the starter was built (
 
 ## B4. Verify
 
-`bin/verify` runs the gate (`mix precommit`), the prod asset build and compile, and boots the release against a scratch database until `/health` answers 200; `bin/verify --docker` adds the image build (run it in the background: about ten minutes). Its summary is the verdict for the rows it covers; a FAIL line names its log.
+`bin/verify` runs the gate (`mix precommit`), the prod asset build and compile, and boots the release against a scratch database until `/health` answers 200; `bin/verify --docker` adds the image build (run it in the background: about ten minutes). Its summary is the verdict for the rows it covers; a FAIL line names its log. Its release boot is a daemon, not the product's runtime: that row takes the runtime's own check (for native, the `systemd-run` check in `NATIVE_RUNTIME.md`). With another project's databases of the same name on the server, run everything with `PGPORT` pointing at a separate PostgreSQL.
 
 Run every other row of the Verification table in `${CLAUDE_SKILL_DIR}/templates/HANDOFF.md`, top to bottom, with the commands it lists, and record each verdict: passed, failed, or not verified with the reason. Where a dependency version was overridden or a security advisory forced an upgrade, exercise the affected code path at runtime: an override compiles cleanly and still breaks an HTTP adapter. A local image build that fails fetching from Hex, npm or the base image registry is `not verified: network`, with the failing line; the CI workflow is that row's check once the repository has a remote.
 
@@ -78,7 +78,7 @@ The deployment artefact follows the runtime profile in analysis §12 (`STACK_POL
 - Swarm and Kubernetes: `templates/deploy/image.yml` to `.github/workflows/image.yml`, `<APP>` filled, and every variable `config/runtime.exs` requires added to its `env` with a throwaway value. A registry other than GHCR replaces the image name and the login step.
 - Swarm: `templates/deploy/stack.yml` to `deploy/stack.yml` and `templates/deploy/Makefile` to the project root, `<APP>` and `<REGISTRY>` replaced with the values from §12, every runtime variable from `.env.example` carried into the stack file, required ones with `:?`. A registry §12 leaves unknown stays as the literal `<REGISTRY>` placeholder and goes into the open questions.
 - Kubernetes: the artefact in the shape §12 records for the organisation's cluster, under `deploy/`, with readiness and liveness probes on `/health`, a rolling update, and the required variables as required secrets. Conventions §12 leaves unknown: `deploy/` holds a `README.md` naming what the cluster's owners must answer, and the question goes into the open questions.
-- Native: follow `${CLAUDE_SKILL_DIR}/references/NATIVE_RUNTIME.md`, and delete the starter's `Dockerfile` and `.dockerignore`. Its artefact goes into `deploy/` (a `systemd --user` unit, for example) with install steps in its header comment, and the release boots under it.
+- Native: follow `${CLAUDE_SKILL_DIR}/references/NATIVE_RUNTIME.md`, including its config edits (`force_ssl`, the endpoint `url`, `ip` and `check_origin`), and delete the starter's `Dockerfile`, `.dockerignore` and `deploy/swarm/`; Swarm and Kubernetes delete `deploy/native/`. Its artefact goes into `deploy/` (a `systemd --user` unit, for example) with install steps in its header comment, and the release boots under it.
 
 The bootstrap deploys nothing.
 
@@ -92,7 +92,7 @@ That revision is the target revision in the handoff.
 
 ## B5. Handoff and stop
 
-Copy the analysis into the target as `docs/PRODUCT_ANALYSIS.md`, and the workspace `notes/` directory, when it exists, as `docs/notes/`. Write `docs/BOOTSTRAP_HANDOFF.md` from `${CLAUDE_SKILL_DIR}/templates/HANDOFF.md` with every field filled; the open-questions queue starts from analysis §15, each entry stating what it blocks. Commit:
+Copy the analysis into the target as `docs/PRODUCT_ANALYSIS.md`, every file beside it that it references (`BRIEF.md` from `/new-ash-project`) into `docs/`, and the workspace `notes/` directory, when it exists, as `docs/notes/`. Write `docs/BOOTSTRAP_HANDOFF.md` from `${CLAUDE_SKILL_DIR}/templates/HANDOFF.md` with every field filled; the open-questions queue starts from analysis §15, each entry stating what it blocks. Commit:
 
 ```bash
 git add docs && git commit -m "docs: product analysis and bootstrap handoff"

@@ -81,6 +81,12 @@ quiet with_retry npm ci --no-audit --no-fund --loglevel=error
 step "compile"
 quiet mix compile
 step "dev database"
+# A database left by another project of the same name would be migrated and tested silently.
+if mix ecto.create 2>&1 | tee -a log/new-app.log | grep -q "already been created"; then
+  echo "  ${app}_dev already exists on this server: another project uses the name."
+  echo "  Use another name, or PGPORT=<port> to put this project on another PostgreSQL."
+  exit 1
+fi
 quiet mix ash.setup
 step "assets"
 quiet mix assets.build
