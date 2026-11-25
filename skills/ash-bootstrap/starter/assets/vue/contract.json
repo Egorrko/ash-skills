@@ -1,0 +1,150 @@
+{
+  "VueDemo": {
+    "type": "object",
+    "properties": {
+      "todos": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "text": {
+              "type": "string"
+            },
+            "completed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "text",
+            "completed"
+          ]
+        }
+      },
+      "form": {
+        "$ref": "Form<{ text: string; }>"
+      }
+    },
+    "required": [
+      "todos",
+      "form"
+    ]
+  },
+  "$defs": {
+    "Form<{ text: string; }>": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        },
+        "errors": {
+          "$ref": "FormErrors<{ text: string; }>"
+        },
+        "valid": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "values",
+        "errors",
+        "valid"
+      ]
+    },
+    "FormErrors<{ text: string; }>": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "required": []
+    }
+  },
+  "$events": {
+    "clear_completed": [
+      {
+        "payload": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        },
+        "reply": null,
+        "components": [
+          "VueDemo"
+        ],
+        "declared": [
+          "assets/vue/VueDemo.vue"
+        ]
+      }
+    ],
+    "delete_todo": [
+      {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "reply": null,
+        "components": [
+          "VueDemo"
+        ],
+        "declared": [
+          "assets/vue/VueDemo.vue"
+        ]
+      }
+    ],
+    "toggle_todo": [
+      {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "reply": null,
+        "components": [
+          "VueDemo"
+        ],
+        "declared": [
+          "assets/vue/VueDemo.vue"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": [
+        "./assets/*"
+      ],
+      "*": [
+        "./deps/*",
+        "./node_modules/*"
+      ]
+    },
+    "strict": true,
+    "types": [
+      "vite/client",
+      "node"
+    ]
+  },
+  "include": [
+    "./assets/js/**/*",
+    "./assets/vue/**/*",
+    "./assets/lib/**/*",
+    "./assets/components/**/*",
+    "./lib/app_template_web/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

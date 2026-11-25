@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# All bootstrap checks of the stack in one run.
+#
+#   bin/verify            precommit gate, prod assets + compile, release boots and answers /health
+#   bin/verify --docker   the same plus docker build of the image
+#
+# Long output goes to log/verify-*.log; the summary prints one line per check.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+app=$(sed -n 's/^ *app: :\([a-z0-9_]*\),.*/\1/p' mix.exs | head -1)
+mkdir -p log
+failed=0
+
+check() {
+  local name=$1; shift
+  local log="log/verify-$name.log" t0=$(date +%s)
+  if "$@" >"$log" 2>&1; then
+    printf '  ok    %-14s %4ss\n' "$name" "$(( $(date +%s) - t0 ))"
+  else
+    printf '  FAIL  %-14s %4ss  → %s\n' "$name" "$(( $(date +%s) - t0 ))" "$log"
+    tail -n 15 "$log" | sed 's/^/        /'
+    failed=1
+  fi
+}
+
+prod_env() {
+  export MIX_ENV=prod DATABASE_URL="ecto://postgres:postgres@127.0.0.1/${app}_verify"
+  export SECRET_KEY_BASE=$(head -c 48 /dev/urandom | base64 -w0) PHX_HOST=localhost
+}
+
+prod_build() ( prod_env; mix assets.build && mix compile --warnings-as-errors )
+
+release_boot() (
+  prod_env
+  port=4900; while ss -ltnH "sport = :$port" | grep -q .; do port=$((port + 1)); done
+  mix release --overwrite || exit 1
+  mix ecto.create || exit 1
+  "_build/prod/rel/$app/bin/migrate" || exit 1
+  PORT=$port PHX_SERVER=true "_build/prod/rel/$app/bin/$app" daemon || exit 1
+  ok=1
+  for _ in $(seq 1 30); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' "localhost:$port/health")
+    [[ $code == 200 ]] && { ok=0; break; }
+    sleep 1
+  done
+  echo "/health on :$port → $code"
+  "_build/prod/rel/$app/bin/$app" stop
+  mix ecto.drop --force-drop >/dev/null 2>&1
+  exit $ok
+)
+
+docker_build() { docker build -t "$app:verify" .; }
+
+echo "verify $app"
+check precommit mix precommit
+check prod-build prod_build
+check release release_boot
+[[ ${1:-} == --docker ]] && check docker docker_build
+exit $failed

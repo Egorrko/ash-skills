@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Create a Phoenix + Ash + LiveVue project from the verified starter in ../starter.
+#
+#   new-app <path/app_name> [--port N] [--vite-port N]
+#
+# Copies the starter, renames AppTemplate/app_template, generates fresh secrets, picks free
+# dev ports (PORT from 4000, VITE_PORT from 5173, unless given), fetches deps and npm packages
+# at the starter's locked versions, creates the dev database, builds assets and commits.
+# Every installer defect in references/INSTALLER_DEFECTS.md is already fixed in the starter.
+set -euo pipefail
+
+SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
+STARTER="$SELF_DIR/../starter"
+started=$(date +%s)
+
+target="" port="" vite_port=""
+while (($#)); do
+  case "$1" in
+    --port) port="$2"; shift 2 ;;
+    --vite-port) vite_port="$2"; shift 2 ;;
+    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) target="$1"; shift ;;
+  esac
+done
+[[ -n $target ]] || { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+
+app=$(basename "$target")
+[[ $app =~ ^[a-z][a-z0-9_]*$ ]] || { echo "app name must be snake_case: $app"; exit 1; }
+[[ ! -e $target ]] || { echo "already exists: $target"; exit 1; }
+module=$(sed -E 's/(^|_)([a-z0-9])/\U\2/g' <<<"$app")
+
+step() { printf '→ %s (%ss)\n' "$*" "$(( $(date +%s) - started ))"; }
+
+listening() { ss -ltnH "sport = :$1" | grep -q .; }
+free_port() { local p=$1; while listening "$p"; do p=$((p + 10)); done; echo "$p"; }
+port=${port:-$(free_port 4000)}
+vite_port=${vite_port:-$(free_port 5173)}
+
+step "copy starter to $target as $module"
+mkdir -p "$(dirname "$target")"
+cp -a "$STARTER" "$target"
+cd "$target"
+grep -rlI -e AppTemplate -e app_template -e APP_TEMPLATE . | xargs -r sed -i \
+  -e "s/AppTemplate/$module/g" -e "s/app_template/$app/g" -e "s/APP_TEMPLATE/${app^^}/g"
+find . -depth -name '*app_template*' | while read -r p; do
+  mv "$p" "$(dirname "$p")/$(basename "$p" | sed "s/app_template/$app/g")"
+done
+
+step "fresh secrets"
+secret() { head -c "$1" /dev/urandom | base64 -w0 | tr -d '\n' | head -c "$2"; }
+for f in config/dev.exs config/test.exs; do
+  sed -i -E "s#(secret_key_base: \")[^\"]+#\1$(secret 48 64)#; s#(keyset_signing_secret: \")[^\"]+#\1$(secret 32 43)#" "$f"
+done
+grep -rlE 'signing_salt: "' config lib | while read -r f; do
+  sed -i -E "s#(signing_salt: \")[^\"]+#\1$(secret 12 8 | tr '+/' 'xy')#g" "$f"
+done
+
+step "dev ports: PORT=$port VITE_PORT=$vite_port"
+sed -i "s/System.get_env(\"PORT\", \"4000\")/System.get_env(\"PORT\", \"$port\")/" config/runtime.exs
+sed -i "s/System.get_env(\"VITE_PORT\", \"5173\")/System.get_env(\"VITE_PORT\", \"$vite_port\")/" config/dev.exs
+sed -i "s/VITE_PORT ?? 5173/VITE_PORT ?? $vite_port/; s/PORT ?? 4000/PORT ?? $port/" assets/vite.config.mjs
+sed -i "s/\"4000\"/\"$port\"/g; s/else 4000/else $port/g" bin/shot.mjs
+
+# hex.pm and npm are sometimes unreachable directly from this machine; retry through the
+# local proxy when one listens on NEW_APP_PROXY (default http://127.0.0.1:10808).
+proxy=${NEW_APP_PROXY:-http://127.0.0.1:10808}
+with_retry() {
+  "$@" && return 0
+  local pp=${proxy##*:}
+  listening "$pp" || return 1
+  echo "  retry through $proxy"
+  HTTP_PROXY=$proxy HTTPS_PROXY=$proxy http_proxy=$proxy https_proxy=$proxy "$@"
+}
+
+mkdir -p log
+quiet() { "$@" >>log/new-app.log 2>&1 || { echo "  failed: $* (log/new-app.log)"; tail -n 20 log/new-app.log; exit 1; }; }
+step "mix deps.get"
+quiet with_retry mix deps.get
+step "npm ci"
+quiet with_retry npm ci --no-audit --no-fund --loglevel=error
+step "compile"
+quiet mix compile
+step "dev database"
+quiet mix ash.setup
+step "assets"
+quiet mix assets.build
+
+step "git"
+git init -q
+git add -A
+git commit -qm "🔥 initial commit from the ash-bootstrap starter"
+
+echo "готово за $(( $(date +%s) - started )) с: $(pwd)"
+echo "  mix phx.server → http://localhost:$port   (Vite :$vite_port)"
+echo "  bin/verify      → все проверки стека"

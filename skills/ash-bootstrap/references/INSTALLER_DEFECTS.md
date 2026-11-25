@@ -121,7 +121,8 @@ answers 200 with no `default.css` request in the page.
 ## LiveVue's vite alias "@" is a bare "."
 
 Observed 2026-11-01 against live_vue 1.2.3, phoenix_vite 0.6.1, vite 8.3.5; reproduced
-2026-11-23 on vite 8.3.8.
+2026-11-23 on vite 8.3.8; on 2026-11-25 only when the imported component is used in a
+template, an unused import builds.
 
 **Symptom.** The LiveVue installer writes `resolve.alias: {"@": "."}` to
 `assets/vite.config.mjs`. A bare `.` resolves relative to the importing file, so
@@ -196,6 +197,17 @@ the `Dockerfile` and `.dockerignore` are not.
 `env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy mix phx.gen.release --docker`.
 
 **Verify.** `Dockerfile` and `.dockerignore` exist.
+
+## boundary keeps a forbidden reference from a deleted file
+
+Observed 2026-11-25 against boundary 0.12.0, Elixir 1.20.5.
+
+**Symptom.** After a file with a forbidden cross-boundary reference is deleted,
+`mix compile --warnings-as-errors` keeps failing on it, naming the deleted file.
+
+**Workaround.** `mix compile --force` once.
+
+**Verify.** Plant and delete a reference; the next plain compile passes only after `--force`.
 
 ## Fixed upstream
 

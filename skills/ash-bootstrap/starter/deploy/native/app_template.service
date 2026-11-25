@@ -1,0 +1,30 @@
+# systemd --user unit for the app_template release: the native runtime profile
+# (ash-bootstrap NATIVE_RUNTIME.md). Delete deploy/native/ when the app runs in Swarm.
+#
+# Install:
+#   MIX_ENV=prod mix assets.deploy && MIX_ENV=prod mix release --overwrite
+#   rm -rf ~/.local/share/app_template/release && mkdir -p ~/.local/share/app_template
+#   cp -r _build/prod/rel/app_template ~/.local/share/app_template/release
+#   mkdir -p ~/.config/app_template ~/.config/systemd/user
+#   cp .env.example ~/.config/app_template/env      # then fill SECRET_KEY_BASE
+#   docker exec postgres18 createdb -U postgres app_template
+#   set -a; . ~/.config/app_template/env; set +a; ~/.local/share/app_template/release/bin/migrate
+#   cp deploy/native/app_template.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now app_template
+#   curl http://127.0.0.1:$PORT/health
+[Unit]
+Description=app_template
+After=network-online.target
+
+[Service]
+Type=exec
+EnvironmentFile=%h/.config/app_template/env
+Environment=PHX_SERVER=true
+ExecStart=%h/.local/share/app_template/release/bin/app_template start
+ExecStop=%h/.local/share/app_template/release/bin/app_template stop
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=default.target
